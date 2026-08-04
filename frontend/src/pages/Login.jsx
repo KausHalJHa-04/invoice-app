@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { Link, useNavigate } from "react-router-dom";
 import { Button, Input, Card } from "../components/UI";
 import toast from "react-hot-toast";
 
@@ -47,6 +47,9 @@ export default function Login() {
             {loading ? "Signing in..." : "Sign In"}
           </Button>
         </form>
+        <Link to="/register" className="block mt-4 text-center">
+          <Button variant="secondary" className="w-full">Register</Button>
+        </Link>
         <p className="text-xs text-slate-400 mt-4">
           First time setup? Use the register endpoint once to create the initial Admin account.
         </p>
