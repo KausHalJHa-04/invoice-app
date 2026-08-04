@@ -1,12 +1,21 @@
 import axios from "axios";
 
+const baseURL = (import.meta.env.VITE_API_BASE_URL || "/api").replace(/\/?$/, "/");
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || "/api",
+  baseURL,
 });
 
 api.interceptors.request.use((config) => {
+  if (config.url?.startsWith("/")) {
+    config.url = config.url.slice(1);
+  }
+
   const token = localStorage.getItem("token");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
+  if (token) {
+    config.headers = config.headers || {};
+    config.headers.Authorization = `Bearer ${token}`;
+  }
   return config;
 });
 
