@@ -10,7 +10,6 @@ connectDB();
 const app = express();
 
 app.use(cors({ origin: process.env.CLIENT_URL || "*" }));
-app.use(express.json({ limit: "10mb" }));
 app.use(morgan("dev"));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
