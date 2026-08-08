@@ -17,16 +17,33 @@ const sanitize = (user) => ({
 // POST /api/auth/register  (only used to bootstrap the first Admin, or by an Admin to add users)
 exports.register = async (req, res) => {
   try {
-    const { name, email, password, role, permissions } = req.body;
+    const { name, email, password, permissions } = req.body;
+    let { role } = req.body;
+
+    // Basic validation
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: "Please provide name, email, and password" });
+    }
     const existing = await User.findOne({ email });
     if (existing) return res.status(400).json({ message: "Email already registered" });
 
     const userCount = await User.countDocuments();
-    // First user in the system is always Admin, regardless of what's posted
-    const finalRole = userCount === 0 ? "Admin" : role || "Sales Person";
+    // If this is the first user, they become an Admin.
+    // If an admin is creating a user, respect the role, otherwise default to Sales Person.
+    if (userCount === 0) {
+      role = "Admin";
+    } else if (!req.user || req.user.role !== "Admin") {
+      // If not the first user and not an admin creating a user, default to Sales Person
+      role = "Sales Person"; 
+    }
 
-    const user = await User.create({ name, email, password, role: finalRole, permissions });
-    res.status(201).json({ token: signToken(user), user: sanitize(user) });
+    const user = await User.create({ name, email, password, role, permissions });
+    // If a non-admin registers, return a token. If an admin creates a user, just return the user data.
+    if (req.user?.role === "Admin") {
+      res.status(201).json(sanitize(user));
+    } else {
+      res.status(201).json({ token: signToken(user), user: sanitize(user) });
+    }
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
